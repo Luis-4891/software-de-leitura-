@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leitura - Rastreie Seus Livros</title>
+    <!-- Modern Google Font: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons via CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- Login Screen -->
+    <main id="login-screen" class="view hidden">
+        <div class="glass-card login-card animate-slide-up">
+            <div class="login-header">
+                <i data-lucide="book-open" class="logo-icon pulse"></i>
+                <h1>Estatísticas de Leitura</h1>
+                <p>O universo das palavras em suas mãos</p>
+            </div>
+            
+            <form id="login-form">
+                <div class="input-group">
+                    <i data-lucide="user"></i>
+                    <input type="text" id="username" placeholder="Usuário" required autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <i data-lucide="lock"></i>
+                    <input type="password" id="password" placeholder="Senha" required>
+                </div>
+                <!-- Error text container -->
+                <p id="login-error" class="error-text hidden">Usuário ou senha incorretos. Tente: Luis / Ec0n0m1a</p>
+                <button type="submit" class="btn-primary">Entrar <i data-lucide="arrow-right"></i></button>
+            </form>
+        </div>
+    </main>
+
+    <!-- App Screen (Dashboard) -->
+    <main id="app-screen" class="view hidden">
+        
+        <!-- Sidebar / Navigation -->
+        <nav class="sidebar glass-panel">
+            <div class="brand">
+                <i data-lucide="book-open" class="logo-icon-small"></i>
+                <h2>Leitura</h2>
+            </div>
+            <ul class="nav-links">
+                <li class="active" data-tab="dashboard">
+                    <i data-lucide="layout-dashboard"></i> <span>Dashboard</span>
+                </li>
+                <li data-tab="reports">
+                    <i data-lucide="bar-chart-2"></i> <span>Relatórios</span>
+                </li>
+            </ul>
+            <div class="nav-bottom">
+                <button id="logout-btn" class="btn-text">
+                    <i data-lucide="log-out"></i> <span>Sair</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <div class="content-area">
+            
+            <!-- Dashboard Tab -->
+            <section id="tab-dashboard" class="tab-content active animate-fade-in">
+                <header class="top-header">
+                    <div>
+                        <h1 class="welcome-text">Olá, <span id="user-display-name">Luis</span>! 👋</h1>
+                        <p class="subtitle">Aqui está o seu progresso de leitura.</p>
+                    </div>
+                </header>
+
+                <div class="stats-grid">
+                    <div class="stat-card glass-card relative-overflow">
+                        <div class="stat-icon flame">
+                            <i data-lucide="flame"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Ofensiva</h3>
+                            <p><span id="streak-days">0</span> dias seguidos</p>
+                        </div>
+                        <div class="bg-glow flame-glow"></div>
+                    </div>
+                    
+                    <div class="stat-card glass-card relative-overflow">
+                        <div class="stat-icon purple">
+                            <i data-lucide="book-check"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Lidos (Mês)</h3>
+                            <p><span id="books-read-month">0</span> livros</p>
+                        </div>
+                        <div class="bg-glow purple-glow"></div>
+                    </div>
+                </div>
+
+                <div class="shelves-container">
+                    <div class="shelf-header">
+                        <h2>Meus Livros</h2>
+                        <button id="open-add-modal" class="btn-primary btn-sm">
+                            <i data-lucide="plus"></i> Adicionar
+                        </button>
+                    </div>
+                    
+                    <!-- Tabs for Shelves -->
+                    <div class="shelf-tabs">
+                        <button class="shelf-tab active" data-shelf="read">Já Li</button>
+                        <button class="shelf-tab" data-shelf="want">Quero Ler</button>
+                    </div>
+
+                    <div class="books-grid" id="books-grid">
+                        <!-- Books will be injected here via JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Reports Tab -->
+            <section id="tab-reports" class="tab-content hidden animate-fade-in">
+                <header class="top-header">
+                    <div>
+                        <h1>Relatório Mensal</h1>
+                        <p class="subtitle">Sua jornada de leitura através dos números.</p>
+                    </div>
+                </header>
+                
+                <div class="report-content">
+                    <div class="glass-card full-width">
+                        <div class="report-header">
+                            <h2>Livros lidos por mês <span id="current-year">2026</span></h2>
+                        </div>
+                        <div class="chart-container" id="monthly-chart">
+                            <!-- Chart Bars inserted via JS -->
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card mt-4">
+                        <h2>Top Autores</h2>
+                        <ul id="top-authors-list" class="author-list">
+                            <!-- Injected via JS -->
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Add Book Modal -->
+    <div id="add-modal" class="modal-overlay hidden">
+        <div class="modal-card glass-card animate-scale-up">
+            <button id="close-modal" class="btn-icon close-btn"><i data-lucide="x"></i></button>
+            <h2 class="modal-title">Adicionar Novo Livro</h2>
+            
+            <p class="modal-desc">Insira o código <b>ISBN</b> (na contracapa do livro) para buscar os detalhes automaticamente.</p>
+            
+            <div class="search-box">
+                <input type="text" id="isbn-input" placeholder="Ex: 9788535914849">
+                <button id="btn-search-isbn" class="btn-secondary">
+                    <i data-lucide="search"></i> Buscar
+                </button>
+            </div>
+            
+            <div id="isbn-loading" class="loading-state hidden">
+                <i data-lucide="loader" class="spin"></i> Buscando livro na nuvem...
+            </div>
+            
+            <!-- Result Preview -->
+            <div id="book-preview" class="book-preview hidden">
+                <img id="preview-cover" src="" alt="Capa do Livro" class="preview-img">
+                <div class="preview-details">
+                    <h3 id="preview-title">Título</h3>
+                    <p id="preview-author">Autor</p>
+                    <p id="preview-pages">0 páginas</p>
+                </div>
+            </div>
+            
+            <div id="add-actions" class="modal-actions hidden">
+                <label>Onde colocar?</label>
+                <div class="action-buttons">
+                    <button class="btn-primary shelf-select-btn" data-target="read">
+                        <i data-lucide="check-circle"></i> Já Li
+                    </button>
+                    <button class="btn-secondary shelf-select-btn" data-target="want">
+                        <i data-lucide="bookmark"></i> Quero Ler
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+    <script>
+        // Initialize lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
