@@ -4,6 +4,8 @@
 const Storage = {
     DEFAULT_STATE: {
         isLoggedIn: false,
+        currentUser: null,
+        users: [{ username: 'luis', password: 'Ec0n0m1a', displayName: 'Luis' }],
         books: [], 
         lastActivityDate: null,
         streak: 0
@@ -21,15 +23,33 @@ const Storage = {
     saveData(data) {
         localStorage.setItem('leitura_data', JSON.stringify(data));
     },
-    login() {
+    login(username) {
         const data = this.getData();
         data.isLoggedIn = true;
+        data.currentUser = username;
         this.saveData(data);
     },
     logout() {
         const data = this.getData();
         data.isLoggedIn = false;
+        data.currentUser = null;
         this.saveData(data);
+    },
+    register(username, password) {
+        const data = this.getData();
+        if (!data.users) data.users = [{ username: 'luis', password: 'Ec0n0m1a', displayName: 'Luis' }];
+        
+        const exists = data.users.find(u => u.username.toLowerCase() === username.toLowerCase());
+        if (exists) return false;
+        
+        data.users.push({
+            username: username.toLowerCase(),
+            password: password,
+            displayName: username.charAt(0).toUpperCase() + username.slice(1)
+        });
+        
+        this.saveData(data);
+        return true;
     },
     isLoggedIn() {
         return this.getData().isLoggedIn;
@@ -164,7 +184,13 @@ const App = {
         loginForm: document.getElementById('login-form'),
         usernameInput: document.getElementById('username'),
         passwordInput: document.getElementById('password'),
-        loginError: document.getElementById('login-error')
+        loginError: document.getElementById('login-error'),
+        registerForm: document.getElementById('register-form'),
+        regUsernameInput: document.getElementById('reg-username'),
+        regPasswordInput: document.getElementById('reg-password'),
+        registerError: document.getElementById('register-error'),
+        showRegisterBtn: document.getElementById('show-register'),
+        showLoginBtn: document.getElementById('show-login')
     },
     buttons: {
         logout: document.getElementById('logout-btn'),
@@ -207,13 +233,22 @@ const App = {
         // Login Submit
         this.forms.loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const u = this.forms.usernameInput.value;
+            const u = this.forms.usernameInput.value.trim();
             const p = this.forms.passwordInput.value;
-            if (u.trim().toLowerCase() === 'luis' && p === 'Ec0n0m1a') {
-                Storage.login();
+            
+            const data = Storage.getData();
+            if (!data.users) {
+                data.users = [{ username: 'luis', password: 'Ec0n0m1a', displayName: 'Luis' }];
+                Storage.saveData(data);
+            }
+            
+            const user = data.users.find(x => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
+
+            if (user) {
+                Storage.login(user.username);
                 this.forms.loginError.classList.add('hidden');
                 this.checkAuth();
-                this.showToast('Bem-vindo de volta, Luis!');
+                this.showToast(`Bem-vindo de volta, ${user.displayName}!`);
             } else {
                 this.forms.loginError.classList.remove('hidden');
                 // shake effect
@@ -225,6 +260,48 @@ const App = {
                     { transform: 'translateX(0px)' }
                 ], { duration: 300 });
             }
+        });
+
+        // Register Submit
+        this.forms.registerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const u = this.forms.regUsernameInput.value.trim();
+            const p = this.forms.regPasswordInput.value;
+            
+            if (u.length < 3) {
+                 this.forms.registerError.textContent = "Usuário deve ter pelo menos 3 caracteres.";
+                 this.forms.registerError.classList.remove('hidden');
+                 return;
+            }
+            
+            const success = Storage.register(u, p);
+            if (success) {
+                this.forms.registerError.classList.add('hidden');
+                Storage.login(u);
+                this.checkAuth();
+                this.showToast(`Conta criada com sucesso! Bem-vindo(a), ${u}!`);
+                
+                // Limpar campos
+                this.forms.regUsernameInput.value = '';
+                this.forms.regPasswordInput.value = '';
+            } else {
+                this.forms.registerError.textContent = "Nome de usuário já existe.";
+                this.forms.registerError.classList.remove('hidden');
+            }
+        });
+        
+        // Form Toggles
+        this.forms.showRegisterBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.forms.loginForm.classList.add('hidden');
+            this.forms.registerForm.classList.remove('hidden');
+            this.forms.loginError.classList.add('hidden');
+        });
+        this.forms.showLoginBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.forms.registerForm.classList.add('hidden');
+            this.forms.loginForm.classList.remove('hidden');
+            this.forms.registerError.classList.add('hidden');
         });
 
         // Logout
@@ -357,6 +434,16 @@ const App = {
     },
 
     renderDashboard() {
+        const data = Storage.getData();
+        let dspName = "Leitor";
+        if (data.users && data.currentUser) {
+            const u = data.users.find(x => x.username.toLowerCase() === data.currentUser.toLowerCase());
+            if (u) dspName = u.displayName;
+        } else if (data.currentUser === null && data.isLoggedIn) {
+            dspName = "Luis";
+        }
+        document.getElementById('user-display-name').textContent = dspName;
+
         this.dashboard.streakDays.textContent = Storage.getStreak() || 0;
         
         // books read this month

@@ -36,8 +36,24 @@
                     <input type="password" id="password" placeholder="Senha" required>
                 </div>
                 <!-- Error text container -->
-                <p id="login-error" class="error-text hidden">Usuário ou senha incorretos. Tente: Luis / Ec0n0m1a</p>
+                <p id="login-error" class="error-text hidden">Usuário ou senha incorretos.</p>
                 <button type="submit" class="btn-primary">Entrar <i data-lucide="arrow-right"></i></button>
+                <p class="auth-switch-text">Não tem uma conta? <a href="#" id="show-register">Criar conta</a></p>
+            </form>
+
+            <form id="register-form" class="hidden">
+                <div class="input-group">
+                    <i data-lucide="user"></i>
+                    <input type="text" id="reg-username" placeholder="Novo Usuário" required autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <i data-lucide="lock"></i>
+                    <input type="password" id="reg-password" placeholder="Nova Senha" required>
+                </div>
+                <!-- Error text container for registration -->
+                <p id="register-error" class="error-text hidden">Usuário já existe.</p>
+                <button type="submit" class="btn-primary">Registrar <i data-lucide="user-plus"></i></button>
+                <p class="auth-switch-text">Já tem uma conta? <a href="#" id="show-login">Fazer Login</a></p>
             </form>
         </div>
     </main>
